@@ -2,10 +2,12 @@ import { Response } from 'express'
 
 import RequestBodyInterface from '../interfaces/RequestBodyInterface'
 import { UserRequest } from '../interfaces/UserInterface'
+
 import { AbstractUserService } from '../services/UserServices'
 
+import { PrismaClient } from '@prisma/client'
 class UserController {
-  constructor(private userService: AbstractUserService){}
+  constructor(private userService: AbstractUserService, private prisma: PrismaClient){}
 
   public async store(req: RequestBodyInterface<UserRequest>, res: Response) {
     const {
@@ -74,7 +76,7 @@ class UserController {
     }
 
     try {
-      const user = await this.userService.createUser({
+      const userData = await this.userService.createUser({
         name,
         email,
         birth_date,
@@ -86,8 +88,20 @@ class UserController {
         password,
       })
 
-      return res.status(200).json(user)
+      const User = await this.prisma.users.create({
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          email: true,
+          password_hash: false,
+        },
+        data: userData,
+      })
+
+      return res.status(200).json(User)
     } catch (error) {
+      console.log(error)
       return res.status(500).json({
         error: 'Internal server error.',
       })

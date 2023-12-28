@@ -6,8 +6,8 @@ import UserController from '../controllers/userController'
 import { UserServices } from '../services/UserServices'
 import prismaClient from '../database/prismaClient'
 
-const userService = new UserServices(prismaClient)
-const userController =  new UserController(userService)
+const userService = new UserServices()
+const userController =  new UserController(userService, prismaClient)
 
 const router = Router()
 

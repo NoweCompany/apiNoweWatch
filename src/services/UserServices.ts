@@ -1,19 +1,27 @@
 import crypto from 'node:crypto'
 
-import { UserRequest, UserReturnDatabase } from '../interfaces/UserInterface'
+import { UserRequest } from '../interfaces/UserInterface'
 import { PrismaClient } from '@prisma/client'
 
+interface User {
+  name: string
+  username: string
+  email: string
+  birth_date: Date
+  gender: 'female' | 'male' | 'other'
+  password_hash: string
+  country: string
+  state: string
+  city: string
+}
+
 abstract class AbstractUserService{
-  abstract createUser(dataUser: UserRequest): Promise<UserReturnDatabase>
+  abstract createUser(dataUser: UserRequest): Promise<User>
 }
 
 class UserServices extends AbstractUserService{
-  constructor(private prisma: PrismaClient){
-    super()
-  }
 
-  async createUser(dataUser: UserRequest): Promise<UserReturnDatabase> {
-    console.log('Creating User...')
+  async createUser(dataUser: UserRequest): Promise<User> {
     try {
       //Verificar se o e-mail já exite no banco
       const password_hash = crypto
@@ -21,7 +29,7 @@ class UserServices extends AbstractUserService{
         .update(dataUser.password)
         .digest('hex')
 
-      const data = {
+      const user = {
         name: dataUser.name,
         username: dataUser.username,
         email: dataUser.email,
@@ -33,18 +41,7 @@ class UserServices extends AbstractUserService{
         city: dataUser.city
       }
 
-      const User = this.prisma.users.create({
-        select: {
-          id: true,
-          name: true,
-          username: true,
-          email: true,
-          password_hash: false,
-        },
-        data: data,
-      })
-
-      return User
+      return user
     } catch (error) {
       throw new Error('An error occurred while creating the user.')
     }

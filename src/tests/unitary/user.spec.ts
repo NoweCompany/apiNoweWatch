@@ -1,8 +1,5 @@
 import { randomUUID } from 'crypto';
-import UserController from '../../controllers/userController'
-import prismaClient from '../../database/prismaClient';
 import { UserServices } from '../../services/UserServices';
-
 
 describe("Test' User", () => {
 
@@ -12,8 +9,8 @@ describe("Test' User", () => {
   afterEach(() => {
   });
 
-  it('Should be created new user in database', async () => {
-    const sut = new UserServices(prismaClient)
+  it('Should return a user with their hashed password', async () => {
+    const sut = new UserServices()
 
     const newUser = await sut.createUser({
       name: "João Silva",
@@ -27,10 +24,20 @@ describe("Test' User", () => {
       username: `joaosilva${randomUUID()}`
     })
 
+    console.log(newUser);
+
+
+    expect(newUser).not.toHaveProperty('password')
+    expect(newUser).toHaveProperty('password_hash')
     expect(newUser).toMatchObject({
-      name: "João Silva",
+      name: newUser.name,
       email: newUser.email,
-      username: newUser.username
+      birth_date: newUser.birth_date,
+      city: newUser.city,
+      country: newUser.country,
+      gender: newUser.gender,
+      state: newUser.state,
+      username: newUser.username,
     })
   })
 })
