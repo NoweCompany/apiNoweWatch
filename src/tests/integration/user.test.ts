@@ -3,6 +3,7 @@ import request from 'supertest';
 import { randomUUID } from 'crypto';
 
 import prismaClient from '../../database/prismaClient';
+import { prismaMock } from '../../configs/singleton';
 
 describe("Test' User", () => {
 
@@ -14,7 +15,22 @@ describe("Test' User", () => {
     await prismaClient.users.deleteMany({})
   });
 
-  it('Should creat an user in database', async () => {
+  it('Should create a user in database', async () => {
+
+    const userMock = {
+      id: 1,
+      name: "João Silva",
+      username: `joaosilva${randomUUID()}`,
+      email: `joao.silva${randomUUID()}@example.com`,
+      birth_date: new Date("1990-01-01"),
+      gender: "male",
+      password_hash: "hashedPassword",
+      city: "Campinas",
+      state: "SP",
+      country: "Brasil",
+    }
+
+    prismaMock.users.create.mockResolvedValue(userMock)
 
     const user = {
       name: "João Silva",
@@ -32,9 +48,9 @@ describe("Test' User", () => {
     expect(response.status).toBe(200)
     expect(response.body).toEqual({
       id: expect.any(Number),
-      name: user.name,
-      email: user.email,
-      username: user.username
+      name: userMock.name,
+      email: userMock.email,
+      username: userMock.username
     })
   })
 })

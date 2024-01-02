@@ -7,99 +7,31 @@ import { AbstractUserService } from '../services/UserServices'
 
 import { PrismaClient } from '@prisma/client'
 class UserController {
-  constructor(private userService: AbstractUserService, private prisma: PrismaClient){}
+  constructor(private userService: AbstractUserService){}
 
   public async store(req: RequestBodyInterface<UserRequest>, res: Response) {
-    const {
-      name,
-      email,
-      birth_date,
-      city,
-      country,
-      gender,
-      state,
-      username,
-      password,
-    } = req.body
-
-    if (!name || name.length < 3) {
-      return res
-        .status(400)
-        .json({ error: 'The name must be at least 3 characters long' })
-    }
-
-    if (!password || password.length < 3 || password.length > 16) {
-      return res.status(400).json({
-        error:
-          'The password must be at least 3 characters long and a maximum of 16.',
-      })
-    }
-
-    if (!email || !/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email)) {
-      return res.status(400).json({ error: 'Invalid Email.' })
-    }
-
-    if (!birth_date || !/^\d{4}-\d{2}-\d{2}$/.test(String(birth_date))) {
-      return res
-        .status(400)
-        .json({ error: 'Invalid date of birth. Use yyyy-mm-dd format.' })
-    }
-
-    if (!city || city.length < 2) {
-      return res
-        .status(400)
-        .json({ error: 'The city must be at least 2 characters long' })
-    }
-
-    if (!country || country.length < 2) {
-      return res
-        .status(400)
-        .json({ error: 'The country must be at least 2 characters long' })
-    }
-
-    if (!gender || (gender !== 'male' && gender !== 'female' && gender !== 'other')) {
-      return res.status(400).json({
-        error: 'Invalid gender. must be "male", "female" or "other".',
-      })
-    }
-
-    if (!state || state.length < 2) {
-      return res
-        .status(400)
-        .json({ error: 'The state must be at least 2 characters long.' })
-    }
-
-    if (!username || username.length < 5) {
-      return res
-        .status(400)
-        .json({ error: 'The username must be at least 5 characters long.' })
-    }
-
     try {
-      const userData = await this.userService.createUser({
-        name,
-        email,
-        birth_date,
-        city,
-        country,
-        gender,
-        state,
-        username,
-        password,
+      const validationUserData = this.userService.validateUserData(req.body)
+
+      if(validationUserData !== null) return res.status(400).json({
+        error: `Validation error, sent parameters are invalid MESSAGE ERROR: ${validationUserData}`
       })
 
-      const User = await this.prisma.users.create({
-        select: {
-          id: true,
-          name: true,
-          username: true,
-          email: true,
-          password_hash: false,
-        },
-        data: userData,
+      const hashedPassword = this.userService.hashingPassword(req.body.password)
+
+      const responseService = await this.userService.createUser({
+        name: req.body.name,
+        username: req.body.username,
+        email: req.body.email,
+        birth_date: req.body.birth_date,
+        gender: req.body.gender,
+        password_hash: hashedPassword,
+        country: req.body.country,
+        state: req.body.state,
+        city: req.body.city
       })
 
-      return res.status(200).json(User)
+      return res.status(200).json(responseService)
     } catch (error) {
       console.log(error)
       return res.status(500).json({

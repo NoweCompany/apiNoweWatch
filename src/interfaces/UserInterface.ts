@@ -22,6 +22,17 @@ interface UserDataBase {
   state: string
   city: string
 }
+interface User {
+  name: string
+  username: string
+  email: string
+  birth_date: Date
+  gender: 'female' | 'male' | 'other'
+  password_hash: string
+  country: string
+  state: string
+  city: string
+}
 
 interface UserReturnDatabase {
   name: string;
@@ -29,4 +40,4 @@ interface UserReturnDatabase {
   email: string;
 }
 
-export {UserRequest, UserDataBase, UserReturnDatabase}
+export {UserRequest, UserDataBase, UserReturnDatabase, User}
