@@ -1,21 +1,30 @@
 import { randomUUID } from 'crypto';
 import { UserServices } from '../../services/UserServices';
+import { Password_hash, User, UserRequest } from '../../interfaces/UserInterface'
+import { PrismaClient } from '@prisma/client'
 
-import PrismaClient from '../../database/prismaClient'
-import { User, UserRequest } from '../../interfaces/UserInterface'
-import { prismaMock } from '../../configs/singleton';
+import { mockDeep, mockReset, DeepMockProxy } from 'jest-mock-extended'
+
+jest.mock('../../database/prismaClient', () => ({
+  __esModule: true,
+  default: mockDeep<PrismaClient>(),
+}))
+
+import prismaSingleton from '../../database/prismaClient'
+const prismaMock = prismaSingleton as unknown as DeepMockProxy<PrismaClient>
 
 describe("Test User Services", () => {
-  const sut = new UserServices(PrismaClient)
+  const sut = new UserServices(prismaSingleton)
 
   beforeEach(() => {
+    mockReset(prismaMock)
   })
 
   afterEach(() => {
   });
 
   it('Should return a user with three properties after being created in databaase', async () => {
-    const userData: User = {
+    const userData: User & Password_hash = {
       name: "João Silva",
       username: `joaosilva${randomUUID()}`,
       email: `joao.silva${randomUUID()}@example.com`,
@@ -37,6 +46,7 @@ describe("Test User Services", () => {
       city: "Campinas",
       state: "SP",
       country: "Brasil",
+      active: true
     }
 
     prismaMock.users.create.mockResolvedValue(mockedUser)

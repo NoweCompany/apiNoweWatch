@@ -21,6 +21,7 @@ model Users {
   country String
   state String
   city String
+  active Boolean @default(true)
 
   photo Photo[]
 }

@@ -1,43 +1,31 @@
-interface UserRequest {
+type Gender = 'female' | 'male' | 'other'
+interface User{
   name: string
   username: string
   email: string
   birth_date: Date
-  gender: 'female' | 'male' | 'other'
-  password: string
+  gender: Gender
   country: string
   state: string
   city: string
 }
-
-interface UserDataBase {
+interface Id {
   id: number
-  name: string
-  username: string
-  email: string
-  birth_date: Date
-  gender: 'female' | 'male' | 'other'
-  password_hash: string
-  country: string
-  state: string
-  city: string
-}
-interface User {
-  name: string
-  username: string
-  email: string
-  birth_date: Date
-  gender: 'female' | 'male' | 'other'
-  password_hash: string
-  country: string
-  state: string
-  city: string
 }
 
-interface UserReturnDatabase {
-  name: string;
-  username: string;
-  email: string;
+interface Password {
+  password: string
 }
 
-export {UserRequest, UserDataBase, UserReturnDatabase, User}
+interface Password_hash{
+  password_hash: string
+}
+
+interface UserRequest extends User, Password{}
+interface UserDataBase extends User, Id, Password_hash{}
+interface UserReturnedDB extends User, Id{}
+
+
+
+
+export { User, UserRequest, UserDataBase, UserReturnedDB, Password_hash, Password, Id }

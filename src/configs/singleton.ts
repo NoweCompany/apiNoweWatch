@@ -1,15 +1,23 @@
-import { PrismaClient } from '@prisma/client'
 import { mockDeep, mockReset, DeepMockProxy } from 'jest-mock-extended'
 
-import prisma from '../database/prismaClient'
+import prismaSingleton from '../database/prismaClient'
+import { PrismaClient } from '@prisma/client'
+import { resolve } from 'path'
 
-jest.mock('../database/prismaClient', () => ({
-  __esModule: true,
-  default: mockDeep<PrismaClient>(),
-}))
+const pismaClienteSingletonDiretory = resolve(__dirname, '..', 'database', 'prismaClient')
 
-beforeEach(() => {
-  mockReset(prismaMock)
-})
+function createMock(): DeepMockProxy<PrismaClient>{
+  jest.mock(pismaClienteSingletonDiretory, () => ({
+    __esModule: true,
+    default: mockDeep<PrismaClient>(),
+  }))
 
-export const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>
+  const prismaMock = prismaSingleton as unknown as DeepMockProxy<PrismaClient>
+
+  return prismaMock
+}
+function resetMock(prismaMock: DeepMockProxy<PrismaClient>){
+  return mockReset(prismaMock)
+}
+
+export {createMock, resetMock}
