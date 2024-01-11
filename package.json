@@ -6,7 +6,7 @@
   "scripts": {
     "start": "dotenv -e .env.prod && node ./dist/index.js",
     "build": "tsc",
-    "dev": "dotenv -e .env.prod -- ts-node ./src/index.ts --watch",
+    "dev": "dotenv -e .env.prod -- ts-node-dev src/index.ts",
     "test": "dotenv -e .env.test -- jest",
     "test:dev": "dotenv -e .env.test -- jest --watch",
     "migrate": "dotenv -e .env.prod prisma migrate dev"
@@ -36,6 +36,7 @@
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3"
   }
 }

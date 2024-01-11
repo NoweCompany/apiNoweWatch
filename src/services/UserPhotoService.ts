@@ -1,54 +1,81 @@
-import { createWriteStream, unlink, unlinkSync } from 'fs';
+import { createWriteStream, unlinkSync } from 'fs';
 import { resolve } from 'path';
 import { randomUUID } from 'crypto';
+import { Response } from 'express';
 
-import MessageProtocol from '../interfaces/MessageInterface';
+import { PrismaClient } from '@prisma/client';
 
 import busboy from 'busboy';
 
 abstract class UserPhotoServiceAbstract{
-  constructor(){}
-  abstract processFile(name: string, file: NodeJS.ReadableStream, info: busboy.FileInfo): Promise<MessageProtocol | null>
+  protected prisma: PrismaClient
+  constructor(prisma: PrismaClient){
+    this.prisma = prisma
+  }
+  abstract processFile(name: string, file: NodeJS.ReadableStream, info: busboy.FileInfo, res: Response): Response | void
 }
 
 class UserPhotoService extends UserPhotoServiceAbstract{
-  constructor(){
-    super()
+  constructor(prisma: PrismaClient){
+    super(prisma)
   }
 
-  async processFile(name: string, file: NodeJS.ReadableStream, info: busboy.FileInfo): Promise<MessageProtocol | null>{
+  processFile(name: string, file: NodeJS.ReadableStream, info: busboy.FileInfo, res: Response): Response | void{
     try {
-      const { filename, encoding, mimeType } = info;
+      const { filename: originName, encoding, mimeType } = info;
       const imageMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp'];
 
       if (!imageMimeTypes.includes(mimeType)) {
-        return { status: 400, message: 'The file should be an image' };
+        res.status(400).json('The file should be an image')
+        res.end()
+        return
       }
 
       const extName = mimeType.split('/')[1]
-      const fileDiretory = resolve(__dirname, '..', '..', 'uploads', 'usersPhotos', `${randomUUID()}_${Date.now()}.${extName}`)
+      const fileName = `${randomUUID()}_${Date.now()}.${extName}`
+      const fileDiretory = resolve(__dirname, '..', 'uploads', 'usersPhotos', `${fileName}`)
       const writableSteam = createWriteStream(fileDiretory)
 
       file.on('data', (data) => {
-        //console.log(`File [${name}] got ${data.length} bytes`);
-        console.log('data');
-        if(data){
+        console.log(`File [${name}] got ${data.length} bytes`);
+        if(!file.isPaused()){
           writableSteam.write(data)
         }
       })
 
       file.on('close', () => {
+        file.resume()
+        writableSteam.end()
+
+        try {
+          this.prisma.photo.create({
+            data: {
+              orinal_name: originName,
+              file_name: fileName,
+              file_diretory: fileDiretory,
+              user_id: 0
+            }
+          })
+        } catch (error) {
+
+        }
+
         console.log(`File [${name}] done`);
+
+        return res.status(200).end();
       });
 
       file.on('limit', () => {
-        unlinkSync(fileDiretory)
-        console.log('File size exceeds the limit.');
-        return { status: 400, message: 'Size exceeded Maximum size is 350MB' };
-      })
+        file.resume()
+        writableSteam.end()
+        console.log('Size exceeded');
 
-      return null;
+        unlinkSync(fileDiretory)
+
+        res.status(400).json('Size exceeded, maximum size is 350MB');
+      })
     } catch (error) {
+      console.log(error);
       throw new Error('A error ocorred whille processing photo user!')
     }
   }

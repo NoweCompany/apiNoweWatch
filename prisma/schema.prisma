@@ -37,6 +37,7 @@ model Photo{
   id Int @id @default(autoincrement())
   orinal_name String
   file_name String
+  file_diretory String
 
   user Users @relation(fields: [user_id], references: [id])
   user_id Int

@@ -17,16 +17,17 @@ class UserPhotoController {
       });
 
       bb.on('file', async (name, file, info) => {
-        const result = await this.userPhotoService.processFile(name, file, info);
-        if (result) {
-          res.status(result.status).json({ message: result.message });
-          res.end();
-        }
+        if(!file) res.status(400).json('Invalid file.')
+        this.userPhotoService.processFile(name, file, info, res);
       });
+
+      bb.on('error', (err: string) => {
+        console.log(err)
+        throw new Error(err)
+      })
 
       bb.on('close', () => {
         console.log('Done parsing form!');
-        res.status(200).json(null);
         res.end();
       });
 
