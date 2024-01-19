@@ -1,9 +1,12 @@
 import Express from 'express'
 
+import 'dotenv/config'
 //Routers
 import userRouter from './routes/userRouter'
 import userPhotoRouter from './routes/userphotoRouter'
+import tokenRouter from './routes/tokenRouter'
 import { resolve } from 'path'
+
 
 class App {
   public readonly app = Express()
@@ -22,6 +25,7 @@ class App {
   private routers(): void {
     this.app.use('/users', userRouter)
     this.app.use('/usersPhoto', userPhotoRouter)
+    this.app.use('/token', tokenRouter)
 
     return
   }

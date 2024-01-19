@@ -39,7 +39,7 @@ class UserPhotoService extends UserPhotoServiceAbstract{
       file.on('data', (data) => {
         console.log(`File [${name}] got ${data.length} bytes`);
         if(!file.isPaused()){
-          writableSteam.write(data)
+         // writableSteam.write(data)
         }
       })
 
@@ -47,32 +47,33 @@ class UserPhotoService extends UserPhotoServiceAbstract{
         file.resume()
         writableSteam.end()
 
-        try {
-          this.prisma.photo.create({
-            data: {
-              orinal_name: originName,
-              file_name: fileName,
-              file_diretory: fileDiretory,
-              user_id: 0
-            }
-          })
-        } catch (error) {
+        // try {
+        //   this.prisma.photo.create({
+        //     data: {
+        //       orinal_name: originName,
+        //       file_name: fileName,
+        //       file_diretory: fileDiretory,
+        //       user_id: 0
+        //     }
+        //   })
+        // } catch (error) {
 
-        }
+        // }
 
         console.log(`File [${name}] done`);
-
-        return res.status(200).end();
       });
 
-      file.on('limit', () => {
+      file.on('limit', async () => {
         file.resume()
         writableSteam.end()
         console.log('Size exceeded');
 
         unlinkSync(fileDiretory)
 
-        res.status(400).json('Size exceeded, maximum size is 350MB');
+        res.writeHead(400)
+        res.json('Size exceeded, maximum size is 350MB')
+        console.log(res)
+
       })
     } catch (error) {
       console.log(error);

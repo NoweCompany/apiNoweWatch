@@ -120,8 +120,12 @@ class UserServices extends AbstractUserService{
           country: true,
           gender: true,
           city: true,
-          photo: true,
           state: true,
+          photo: {
+            select: {
+              file_name: true,
+            }
+          },
           password_hash: false,
           active: false
         },
@@ -132,6 +136,7 @@ class UserServices extends AbstractUserService{
 
       return users
     }catch(error){
+      console.log(error)
       throw new Error('An Error ocurred while list users')
     }
   }
