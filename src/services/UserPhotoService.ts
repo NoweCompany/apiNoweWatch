@@ -12,7 +12,7 @@ abstract class UserPhotoServiceAbstract{
   constructor(prisma: PrismaClient){
     this.prisma = prisma
   }
-  abstract processFile(name: string, file: NodeJS.ReadableStream, info: busboy.FileInfo, res: Response): Response | void
+  abstract processFile(name: string, file: NodeJS.ReadableStream, info: busboy.FileInfo, res: Response): Promise<Response | void>
 }
 
 class UserPhotoService extends UserPhotoServiceAbstract{
@@ -20,7 +20,7 @@ class UserPhotoService extends UserPhotoServiceAbstract{
     super(prisma)
   }
 
-  processFile(name: string, file: NodeJS.ReadableStream, info: busboy.FileInfo, res: Response): Response | void{
+  async processFile(name: string, file: NodeJS.ReadableStream, info: busboy.FileInfo, res: Response): Promise<Response | void>{
     try {
       const { filename: originName, encoding, mimeType } = info;
       const imageMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp'];
@@ -39,26 +39,30 @@ class UserPhotoService extends UserPhotoServiceAbstract{
       file.on('data', (data) => {
         console.log(`File [${name}] got ${data.length} bytes`);
         if(!file.isPaused()){
-         // writableSteam.write(data)
+          writableSteam.write(data)
         }
       })
 
-      file.on('close', () => {
+      file.on('close', async () => {
         file.resume()
         writableSteam.end()
 
-        // try {
-        //   this.prisma.photo.create({
-        //     data: {
-        //       orinal_name: originName,
-        //       file_name: fileName,
-        //       file_diretory: fileDiretory,
-        //       user_id: 0
-        //     }
-        //   })
-        // } catch (error) {
+        try {
+          // await this.prisma.photo.create({
+          //   data: {
+          //     orinal_name: originName,
+          //     file_name: fileName,
+          //     file_diretory: fileDiretory,
+          //     user_id: 1
+          //   }
+          // })
+          //console.log(await this.prisma.photo.findMany({}));
 
-        // }
+        } catch (error) {
+          console.log(error);
+          unlinkSync(fileDiretory)
+          return res.status(400).json('An error ocurent while create users photo.')
+        }
 
         console.log(`File [${name}] done`);
       });
@@ -70,10 +74,10 @@ class UserPhotoService extends UserPhotoServiceAbstract{
 
         unlinkSync(fileDiretory)
 
-        res.writeHead(400)
-        res.json('Size exceeded, maximum size is 350MB')
-        console.log(res)
+        //res.writeHead(400)
+        res.status(400).json('Size exceeded, maximum size is 350MB')
 
+        //console.log(res)
       })
     } catch (error) {
       console.log(error);

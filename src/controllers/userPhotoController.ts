@@ -3,7 +3,6 @@ import busboy from 'busboy';
 
 import { UserPhotoServiceAbstract } from '../services/UserPhotoService'
 
-
 class UserPhotoController {
   constructor(private userPhotoService: UserPhotoServiceAbstract) {}
   async store(req: Request, res: Response) {
@@ -18,7 +17,7 @@ class UserPhotoController {
 
       bb.on('file', async (name, file, info) => {
         if(!file) res.status(400).json('Invalid file.')
-        this.userPhotoService.processFile(name, file, info, res);
+        await this.userPhotoService.processFile(name, file, info, res);
       });
 
       bb.on('error', (err: string) => {
@@ -27,8 +26,8 @@ class UserPhotoController {
       })
 
       bb.on('close', () => {
+        res.end()
         console.log('Done parsing form!');
-        res.end();
       });
 
       req.pipe(bb);
