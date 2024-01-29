@@ -16,7 +16,7 @@ const user = {
 
 describe("Test Token", () => {
   beforeAll(async () => {
-    const response = await request(app).post('/users').send(user)
+    await request(app).post('/users').send(user)
   })
 
   afterAll(async () => {

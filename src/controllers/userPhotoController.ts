@@ -7,6 +7,8 @@ class UserPhotoController {
   constructor(private userPhotoService: UserPhotoServiceAbstract) {}
   async store(req: Request, res: Response) {
     try {
+      const { userId } = req
+
       const bb = busboy({
         headers: req.headers,
         limits: {
@@ -17,7 +19,7 @@ class UserPhotoController {
 
       bb.on('file', async (name, file, info) => {
         if(!file) res.status(400).json('Invalid file.')
-        await this.userPhotoService.processFile(name, file, info, res);
+        await this.userPhotoService.processFile(name, file, info, res, Number(userId));
       });
 
       bb.on('error', (err: string) => {

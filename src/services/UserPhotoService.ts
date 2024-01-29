@@ -12,15 +12,15 @@ abstract class UserPhotoServiceAbstract{
   constructor(prisma: PrismaClient){
     this.prisma = prisma
   }
-  abstract processFile(name: string, file: NodeJS.ReadableStream, info: busboy.FileInfo, res: Response): Promise<Response | void>
+  abstract processFile(name: string, file: NodeJS.ReadableStream, info: busboy.FileInfo, res: Response, userId: number): Promise<Response | void>
 }
 
-class UserPhotoService extends UserPhotoServiceAbstract{
+  class UserPhotoService extends UserPhotoServiceAbstract{
   constructor(prisma: PrismaClient){
     super(prisma)
   }
 
-  async processFile(name: string, file: NodeJS.ReadableStream, info: busboy.FileInfo, res: Response): Promise<Response | void>{
+  async processFile(name: string, file: NodeJS.ReadableStream, info: busboy.FileInfo, res: Response, userId: number): Promise<Response | void>{
     try {
       const { filename: originName, encoding, mimeType } = info;
       const imageMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp'];
@@ -48,15 +48,14 @@ class UserPhotoService extends UserPhotoServiceAbstract{
         writableSteam.end()
 
         try {
-          // await this.prisma.photo.create({
-          //   data: {
-          //     orinal_name: originName,
-          //     file_name: fileName,
-          //     file_diretory: fileDiretory,
-          //     user_id: 1
-          //   }
-          // })
-          //console.log(await this.prisma.photo.findMany({}));
+          await this.prisma.photo.create({
+            data: {
+              orinal_name: originName,
+              file_name: fileName,
+              file_diretory: fileDiretory,
+              user_id: userId
+            }
+          })
 
         } catch (error) {
           console.log(error);

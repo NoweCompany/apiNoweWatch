@@ -6,6 +6,12 @@
     "module": "commonjs",
     "rootDir": "./src",
 
+    "typeRoots": [
+      "./@types/express/index",
+      "./@types",
+      "./node_modules/@types"
+    ],
+
     "allowJs": false,
     "checkJs": false,
 
@@ -21,6 +27,6 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "@types/express/custom.d.ts"],
   "exclude": ["node_modules", "dist"]
 }
